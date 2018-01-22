@@ -1,3 +1,17 @@
 body {
     text-align: center;
 }
+
+canvas {
+  margin-top: 20px;
+}
+
+h3 {
+  position: absolute;
+  z-index: 1;
+  margin: 0 auto;
+  display: inline-block;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}

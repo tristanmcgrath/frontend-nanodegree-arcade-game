@@ -9,7 +9,7 @@
  * drawn but that is not the case. What's really happening is the entire "scene"
  * is being drawn over and over, presenting the illusion of animation.
  *
- * This engine makes the canvas' context (ctx) object globally available to make 
+ * This engine makes the canvas' context (ctx) object globally available to make
  * writing app.js a little simpler to work with.
  */
 
@@ -22,6 +22,7 @@ var Engine = (function(global) {
         win = global.window,
         canvas = doc.createElement('canvas'),
         ctx = canvas.getContext('2d'),
+        score = 0,
         lastTime;
 
     canvas.width = 505;
@@ -65,21 +66,15 @@ var Engine = (function(global) {
     function init() {
         reset();
         lastTime = Date.now();
+        score = 0;
         main();
     }
 
     /* This function is called by main (our game loop) and itself calls all
-     * of the functions which may need to update entity's data. Based on how
-     * you implement your collision detection (when two entities occupy the
-     * same space, for instance when your character should die), you may find
-     * the need to add an additional function call here. For now, we've left
-     * it commented out - you may or may not want to implement this
-     * functionality this way (you could just implement collision detection
-     * on the entities themselves within your app.js file).
-     */
+      of the functions which may need to update entity's data. */
     function update(dt) {
         updateEntities(dt);
-        // checkCollisions();
+        checkCollisions();
     }
 
     /* This is called by the update function and loops through all of the
@@ -94,6 +89,21 @@ var Engine = (function(global) {
             enemy.update(dt);
         });
         player.update();
+    }
+
+    //This function checks for player collisions with either bugs (death) or water (victory)
+    function checkCollisions() {
+      allEnemies.forEach(function(enemy) {
+          if (Math.abs(enemy.x - player.x) < 101 && enemy.y === (player.y - 10)) {
+              score = 0;                       //if the player collides with a bug, then reset the score count and game board
+              $('h3').html(`Score: ${score}`);
+              reset();
+          } else if (player.y === -10) {       //if player makes it to water (y = -10), then increment the score count and reset game board
+              score += 1;
+              $('h3').html(`Score: ${score}`);
+              reset();
+          }
+      });
     }
 
     /* This function initially draws the "game level", it will then call
@@ -117,7 +127,7 @@ var Engine = (function(global) {
             numRows = 6,
             numCols = 5,
             row, col;
-        
+
         // Before drawing, clear existing canvas
         ctx.clearRect(0,0,canvas.width,canvas.height)
 
@@ -153,15 +163,17 @@ var Engine = (function(global) {
             enemy.render();
         });
 
-        player.render();
+        player.render(); //call player.render
     }
 
-    /* This function does nothing but it could have been a good place to
-     * handle game reset states - maybe a new game menu or a game over screen
-     * those sorts of things. It's only called once by the init() method.
-     */
+    //This function resets the game by resetting player and bugs to initial positions and assigning a new speed property to each bug instance
     function reset() {
-        // noop
+      allEnemies.forEach(function(enemy) {
+          enemy.x = -101;    //reset enemy bug to initial spot
+          enemy.speed = 100 + (Math.random()*300); //set new enemy speed
+      });
+      player.x = 2*101;
+      player.y = (5*83) - 10;
     }
 
     /* Go ahead and load all of the images we know we're going to need to
